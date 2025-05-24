@@ -1,0 +1,273 @@
+/* Global Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    background: white;
+    min-height: 100vh;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h1 {
+    text-align: center;
+    padding: 15px;
+    margin: 0;
+    background: #4CAF50;
+    color: white;
+    font-size: 18px;
+}
+
+/* Chat Container */
+.chat-container {
+    padding: 15px;
+    height: calc(100vh - 150px);
+    overflow-y: auto;
+}
+
+.message {
+    margin-bottom: 15px;
+    max-width: 80%;
+    padding: 12px 15px;
+    border-radius: 18px;
+    line-height: 1.5;
+}
+
+.user-message {
+    background: #4CAF50;
+    color: white;
+    margin-left: auto;
+    border-bottom-right-radius: 5px;
+}
+
+.bot-message {
+    background: #f0f0f0;
+    margin-right: auto;
+    border-bottom-left-radius: 5px;
+}
+
+/* Recipe Styles */
+.recipe-title {
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.recipe-section {
+    margin-bottom: 15px;
+}
+
+.recipe-list {
+    padding-left: 20px;
+    margin: 8px 0;
+}
+
+.recipe-list li {
+    margin-bottom: 5px;
+}
+
+/* Product Cards */
+.products-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 15px;
+    padding: 10px 0;
+    -webkit-overflow-scrolling: touch;
+}
+
+.product-card {
+    min-width: 120px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.product-image-container {
+    width: 120px;
+    height: 120px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.product-info {
+    padding: 8px 0;
+}
+
+.product-name {
+    font-weight: 500;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.product-price {
+    font-weight: bold;
+    color: #ff2d55;
+    font-size: 14px;
+}
+
+.product-meta {
+    font-size: 12px;
+    color: #666;
+}
+
+/* Product Detail Page */
+.product-detail-container {
+    padding: 15px;
+}
+
+.product-header {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.product-image-detail {
+    width: 120px;
+    height: 120px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.product-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.product-price-detail {
+    font-size: 16px;
+    font-weight: bold;
+    color: #ff2d55;
+    margin-bottom: 5px;
+}
+
+.product-meta-detail {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.section-title {
+    font-weight: bold;
+    margin: 15px 0 8px 0;
+    font-size: 16px;
+}
+
+.product-description {
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 15px;
+}
+
+.benefits-list, .composition-list {
+    padding-left: 20px;
+    font-size: 14px;
+}
+
+.benefits-list li, .composition-list li {
+    margin-bottom: 5px;
+}
+
+/* Input Form */
+.chat-form {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    max-width: 600px;
+    background: white;
+    padding: 10px 15px;
+    border-top: 1px solid #eee;
+    display: flex;
+    box-sizing: border-box;
+}
+
+.chat-form input {
+    flex: 1;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    font-size: 15px;
+    outline: none;
+}
+
+.chat-form button {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 0 20px;
+    margin-left: 10px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+/* Message Styling */
+.message-content {
+    line-height: 1.6;
+}
+
+.message-content strong {
+    display: block;
+    margin: 10px 0 5px 0;
+    color: #333;
+    font-size: 16px;
+}
+
+.message-content ul, .message-content ol {
+    padding-left: 20px;
+    margin: 8px 0;
+}
+
+.message-content li {
+    margin-bottom: 5px;
+}
+
+/* Product Links Styling */
+.product-link {
+    display: inline-block;
+    background: #f0f0f0;
+    padding: 8px 12px;
+    border-radius: 15px;
+    margin: 5px 5px 5px 0;
+    color: #007bff;
+    text-decoration: none;
+    font-size: 14px;
+    border: 1px solid #ddd;
+}
+
+.product-link:hover {
+    background: #e0e0e0;
+}
+
+/* Recipe Steps */
+.message-content ol {
+    counter-reset: step-counter;
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.message-content ol li {
+    position: relative;
+    padding-left: 25px;
+    margin-bottom: 8px;
+}
+
+.message-content ol li:before {
+    content: counter(step-counter) ".";
+    counter-increment: step-counter;
+    position: absolute;
+    left: 0;
+    font-weight: bold;
+    color: #4CAF50;
+}

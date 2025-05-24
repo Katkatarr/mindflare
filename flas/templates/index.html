@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pasaraya</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Pasaraya</h1>
+        
+        <div class="chat-container" id="chat-container">
+            {% for msg in messages %}
+                <div class="message {{ 'user-message' if msg.role == 'user' else 'bot-message' }}">
+                    {% if msg.role == 'assistant' %}
+                        {{ msg.content|safe }}
+                    {% else %}
+                        {{ msg.content }}
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+        
+        <form id="chat-form" class="chat-form">
+            <input type="text" id="user-input" name="user_input" placeholder="Tanya resep makanan tradisional..." required>
+            <button type="submit">Kirim</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('chat-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const userInput = document.getElementById('user-input');
+            const message = userInput.value.trim();
+            
+            if (message) {
+                // Add user message to chat
+                const chatContainer = document.getElementById('chat-container');
+                const userMessageDiv = document.createElement('div');
+                userMessageDiv.className = 'message user-message';
+                userMessageDiv.textContent = message;
+                chatContainer.appendChild(userMessageDiv);
+                
+                // Show loading indicator
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'message bot-message loading';
+                loadingDiv.textContent = 'Mencari resep...';
+                chatContainer.appendChild(loadingDiv);
+                
+                // Scroll to bottom
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                
+                // Send to server
+                fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        'user_input': message
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Remove loading indicator
+                    chatContainer.removeChild(loadingDiv);
+                    
+                    if (data.error) {
+                        // Show error
+                        const errorDiv = document.createElement('div');
+                        errorDiv.className = 'message bot-message error';
+                        errorDiv.textContent = 'Error: ' + data.error;
+                        chatContainer.appendChild(errorDiv);
+                    } else {
+                        // Add bot reply
+                        const botMessageDiv = document.createElement('div');
+                        botMessageDiv.className = 'message bot-message';
+                        botMessageDiv.innerHTML = data.bot_reply;
+
+                        // Scroll to bottom setelah update
+                        setTimeout(() => {
+                            chatContainer.scrollTop = chatContainer.scrollHeight;
+                        }, 100);
+
+                        chatContainer.appendChild(botMessageDiv);
+                    }
+
+                     // Scroll to bottom
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                    
+                    // Clear input
+                    userInput.value = '';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    chatContainer.removeChild(loadingDiv);
+                    
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'message bot-message error';
+                    errorDiv.textContent = 'Error: ' + error;
+                    chatContainer.appendChild(errorDiv);
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product.name }} - Pasaraya</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Pasaraya</h1>
+        
+        <div class="product-detail-container">
+            <div class="product-header">
+                <img src="{{ product.image }}" alt="{{ product.name }}" class="product-image-detail">
+                <div>
+                    <div class="product-title">{{ product.name }}</div>
+                    <div class="product-price-detail">{{ product.price }}</div>
+                    <div class="product-meta-detail">
+                        {{ product.sold }} • {{ product.reviews }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section-title">Deskripsi:</div>
+            <div class="product-description">{{ product.description }}</div>
+            
+            <div class="section-title">Komposisi:</div>
+            <ul class="composition-list">
+                {% for item in product.composition %}
+                <li>{{ item }}</li>
+                {% endfor %}
+            </ul>
+            
+            <div class="section-title">Manfaat:</div>
+            <ul class="benefits-list">
+                {% for benefit in product.benefits %}
+                <li>{{ benefit }}</li>
+                {% endfor %}
+            </ul>
+            
+            <button style="width: 100%; padding: 15px; background: #4CAF50; color: white; border: none; border-radius: 10px; margin-top: 20px; font-size: 16px; cursor: pointer;">
+                Beli Sekarang
+            </button>
+        </div>
+    </div>
+</body>
+</html>
