@@ -5,43 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ product.name }} - Pasaraya</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
         <h1>{{ product.name }}</h1>
-        <div class="product-detail">
-            <img src="{{ product.image }}" alt="{{ product.name }}" class="product-image">
-            <div class="product-info">
-                <div class="product-price">{{ product.price }}</div>
-                <div class="product-sold">{{ product.sold }}</div>
-                
-                <div class="product-actions">
-                    <button id="add-to-cart-btn" class="add-to-cart-btn" 
-                            data-product-id="{{ product.name|lower|replace(' ', '-') }}">
-                        Tambah ke Keranjang
-                    </button>
-                    <a href="/cart" class="view-cart-btn">Lihat Keranjang</a>
-                </div>
-            </div>
-        </div>
-        <a href="/" class="back-button">Kembali ke Chat</a>
-    </div>
-
-    <div class="product-detail-container">
+        
         <div class="product-header">
-            <!-- Foto Produk -->
             <img src="{{ product.image }}" alt="{{ product.name }}" class="product-image-detail">
-            
-            <!-- Info Produk (sekarang di samping foto) -->
             <div class="product-info-side">
                 <div class="product-price">{{ product.price }}</div>
                 <div class="product-sold">{{ product.sold }}</div>
             </div>
         </div>
 
-        <!-- Tombol-tombol -->
         <div class="product-actions">
-            <button id="add-to-cart-btn" class="add-to-cart-btn">
+            <button id="add-to-cart-btn" class="add-to-cart-btn" data-product-id="{{ product.name|lower|replace(' ', '-') }}">
                 Tambah ke Keranjang
             </button>
             <a href="/cart" class="view-cart-btn">
@@ -50,6 +29,41 @@
         </div>
 
         <a href="/" class="back-button">Kembali ke Chat</a>
+
+        <!-- Product Description Section -->
+        <div class="product-description">
+            <h3>Deskripsi Produk</h3>
+            <p>{{ description }}</p>
+        </div>
+
+        <!-- Product Reviews Section -->
+        <div class="product-reviews">
+            <h3>Ulasan Pembeli ({{ reviews|length }})</h3>
+            
+            {% if reviews %}
+                <div class="reviews-container">
+                    {% for review in reviews %}
+                        <div class="review-card">
+                            <div class="review-header">
+                                <span class="review-user">{{ review.user }}</span>
+                                <div class="review-rating">
+                                    {% for i in range(5) %}
+                                        {% if i < review.rating %}
+                                            <i class="fas fa-star"></i>
+                                        {% else %}
+                                            <i class="far fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <p class="review-comment">{{ review.comment }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="no-reviews">Belum ada ulasan untuk produk ini</p>
+            {% endif %}
+        </div>
     </div>
 
     <script>
@@ -57,7 +71,6 @@
             const button = this;
             const productId = button.getAttribute('data-product-id');
             
-            // Tampilkan loading state
             button.disabled = true;
             button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
             
@@ -76,16 +89,14 @@
                 }
                 
                 if (data.success) {
-                    // Update tampilan tombol
                     button.innerHTML = '<i class="fas fa-check"></i> Berhasil!';
                     
-                    // Update cart count jika ada
                     const cartCount = document.querySelector('.cart-count');
                     if (cartCount) {
                         cartCount.textContent = data.cart_count;
+                        cartCount.style.display = 'flex';
                     }
                     
-                    // Kembalikan ke state normal setelah 2 detik
                     setTimeout(() => {
                         button.innerHTML = 'Tambah ke Keranjang';
                         button.disabled = false;
@@ -93,15 +104,14 @@
                 }
             } catch (error) {
                 console.error('Error:', error);
-                button.innerHTML = 'Error! Coba Lagi';
+                button.innerHTML = '<i class="fas fa-exclamation-circle"></i> Gagal!';
                 
-                // Kembalikan ke state normal setelah 3 detik
                 setTimeout(() => {
                     button.innerHTML = 'Tambah ke Keranjang';
                     button.disabled = false;
                 }, 3000);
             }
         });
-        </script>
+    </script>
 </body>
 </html>

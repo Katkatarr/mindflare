@@ -71,8 +71,13 @@ PRODUCTS = {
         "name": "Gula Merah Aren",
         "price": "Rp25.000",
         "sold": "3.5k+ terjual", 
+        "reviews": [
+            {"user": "Rina", "rating": 5, "comment": "Aren asli, rasanya enak banget!"},
+            {"user": "Dodi", "rating": 4, "comment": "Kualitas bagus untuk harga segini"},
+            {"user": "Sari", "rating": 3, "comment": "Agak keras tapi masih enak"}
+        ],
         "image": "/static/images/Gula-Merah.png",
-        "description": "Gula merah alami dari aren asli"
+        "description": "Gula merah alami dari aren asli yang diproses secara tradisional. Diolah tanpa bahan pengawet atau pewarna buatan. Cocok untuk berbagai masakan tradisional dan minuman khas Indonesia. Rasa manis alami dengan aroma khas aren yang menggugah selera."
     },
     "cabai-rawit": {
         "name": "Cabai Rawit Merah",
@@ -241,15 +246,19 @@ def chat():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
 @app.route('/product/<product_id>')
 def product_detail(product_id):
-    product_id = product_id.replace('product.', '')
-    product = PRODUCTS.get(product_id.lower())
+    product_id = product_id.replace('product.', '').lower()
+    product = PRODUCTS.get(product_id)
     
     if not product:
         return render_template('404.html'), 404
-    return render_template('product.html', product=product)
-
+        
+    return render_template('product.html', 
+                         product=product,
+                         description=product.get('description', 'Deskripsi produk tidak tersedia'),
+                         reviews=product.get('reviews', []))
 def format_response(text):
     # Handle line breaks first
     text = text.replace('\n', '<br>')
