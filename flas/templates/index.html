@@ -5,10 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pasaraya</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
-        <h1>Pasaraya</h1>
+        <div class="header">
+            <h1>Pasaraya</h1>
+            <a href="/cart" class="cart-icon">
+                <i class="fas fa-shopping-cart"></i>
+                {% if cart_count > 0 %}
+                    <span class="cart-count">{{ cart_count }}</span>
+                {% endif %}
+            </a>
+        </div>
         
         <div class="chat-container" id="chat-container">
             {% for msg in messages %}
@@ -86,7 +95,8 @@
                         chatContainer.appendChild(botMessageDiv);
                     }
 
-                     // Scroll to bottom
+        
+                    // Scroll to bottom
                     chatContainer.scrollTop = chatContainer.scrollHeight;
                     
                     // Clear input
@@ -105,5 +115,6 @@
             }
         });
     </script>
+    
 </body>
 </html>

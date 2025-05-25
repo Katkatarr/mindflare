@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keranjang Belanja - Pasaraya</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Keranjang Belanja</h1>
+            <a href="/" class="back-button">Kembali ke Chat</a>
+        </div>
+        
+        <div id="cart-items">
+            {% if cart %}
+                {% for product_id, item in cart.items() %}
+                    <div class="cart-item" data-product-id="{{ product_id }}">
+                        <img src="{{ item.image }}" alt="{{ item.name }}">
+                        <div class="item-details">
+                            <h3>{{ item.name }}</h3>
+                            <p class="price">{{ item.price }}</p>
+                            <div class="quantity-control">
+                                <button class="quantity-btn minus">-</button>
+                                <span class="quantity">{{ item.quantity }}</span>
+                                <button class="quantity-btn plus">+</button>
+                            </div>
+                        </div>
+                        <button class="remove-btn">Hapus</button>
+                    </div>
+                {% endfor %}
+                
+                <div class="cart-summary">
+                    <h3>Total: Rp{{ "{:,}".format(total).replace(",", ".") }}</h3>
+                    <button class="checkout-btn">Lanjut ke Pembayaran</button>
+                </div>
+            {% else %}
+                <p class="empty-cart">Keranjang belanja Anda kosong</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // Handle quantity changes
+        document.querySelectorAll('.quantity-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const cartItem = this.closest('.cart-item');
+                const productId = cartItem.getAttribute('data-product-id');
+                const quantityElement = cartItem.querySelector('.quantity');
+                let quantity = parseInt(quantityElement.textContent);
+                
+                if (this.classList.contains('minus')) {
+                    quantity = Math.max(1, quantity - 1);
+                } else {
+                    quantity += 1;
+                }
+                
+                updateCartItem(productId, quantity, quantityElement);
+            });
+        });
+        
+        // Handle remove item
+        document.querySelectorAll('.remove-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const productId = this.closest('.cart-item').getAttribute('data-product-id');
+                removeCartItem(productId);
+            });
+        });
+        
+        function updateCartItem(productId, quantity, quantityElement) {
+            quantityElement.textContent = '...';
+            
+            fetch(`/update_cart/${productId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ quantity: quantity })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                quantityElement.textContent = quantity;
+            });
+        }
+        
+        function removeCartItem(productId) {
+            if (confirm('Apakah Anda yakin ingin menghapus item ini?')) {
+                fetch(`/remove_from_cart/${productId}`, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>

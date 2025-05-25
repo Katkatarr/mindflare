@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session
 import dashscope
 from dashscope import Generation
 from dotenv import load_dotenv
@@ -9,6 +9,7 @@ import json
 load_dotenv()
 
 app = Flask(__name__)
+app.secret_key = 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c56'
 
 # Set API Key
 DASHSCOPE_API_KEY = os.getenv('DASHSCOPE_API_KEY', 'your-default-api-key')
@@ -45,20 +46,6 @@ PRODUCTS = {
             "Tekstur lembut"
         ]
     },
-    "gula-merah": {
-        "name": "Gula Merah Aren",
-        "price": "Rp25.000",
-        "sold": "10K+ terjual",
-        "reviews": "1.2k ulasan",
-        "image": "/static/images/gula-merah.jpg",
-        "description": "Gula merah alami dari aren asli, tanpa bahan pengawet.",
-        "composition": ["Gula aren murni", "Tanpa pengawet"],
-        "benefits": [
-            "Lebih sehat dari gula putih",
-            "Cocok untuk masakan tradisional",
-            "Rasa lebih kaya"
-        ]
-    },
     "kacang-hijau": {
         "name": "Kacang Hijau Kupas",
         "price": "Rp18.000",
@@ -72,9 +59,28 @@ PRODUCTS = {
             "Sumber serat tinggi",
             "Tanpa bahan pengawet"
         ]
+    },
+    "terasi": {
+        "name": "Terasi Udang",
+        "price": "Rp15.000",
+        "sold": "1.2k+ terjual",
+        "image": "/static/images/Terasi.png",
+        "description": "Terasi udang premium kualitas terbaik"
+    },
+    "gula-merah": {
+        "name": "Gula Merah Aren",
+        "price": "Rp25.000",
+        "sold": "3.5k+ terjual", 
+        "image": "/static/images/Gula-Merah.png",
+        "description": "Gula merah alami dari aren asli"
+    },
+    "cabai-rawit": {
+        "name": "Cabai Rawit Merah",
+        "price": "Rp12.000",
+        "sold": "2.8k+ terjual",
+        "image": "/static/images/cabai-rawit.png",
+        "description": "Cabai rawit segar pedas"
     }
-    # Tambahkan produk lainnya sesuai kebutuhan
-
 }
 
 # Initialize chat history
@@ -103,7 +109,108 @@ Gunakan format yang konsisten dan pastikan setiap bagian dipisahkan dengan baris
 
 @app.route('/')
 def home():
-    return render_template('index.html', messages=chat_history[1:])
+    if 'cart' not in session:
+        session['cart'] = {}
+    return render_template('index.html', messages=chat_history[1:], cart_count=len(session['cart']))
+
+@app.route('/add_to_cart/<product_id>', methods=['POST'])
+def add_to_cart(product_id):
+    try:
+        # Normalize product ID
+        product_id = product_id.lower().replace(' ', '-').replace('_', '-')
+        
+        # Cek apakah produk ada
+        if product_id not in PRODUCTS:
+            return jsonify({
+                'success': False,
+                'error': 'Product not found',
+                'product_id': product_id
+            }), 404
+
+        # Inisialisasi cart jika belum ada
+        if 'cart' not in session:
+            session['cart'] = {}
+
+        # Tambahkan/update produk di cart
+        if product_id in session['cart']:
+            session['cart'][product_id]['quantity'] += 1
+        else:
+            product = PRODUCTS[product_id]
+            session['cart'][product_id] = {
+                'name': product['name'],
+                'price': product['price'],
+                'image': product['image'],
+                'quantity': 1
+            }
+
+        session.modified = True
+        
+        return jsonify({
+            'success': True,
+            'cart_count': len(session['cart']),
+            'message': f'{PRODUCTS[product_id]["name"]} ditambahkan ke keranjang'
+        })
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/cart')
+def view_cart():
+    if 'cart' not in session:
+        session['cart'] = {}
+    
+    total = 0
+    for item in session['cart'].values():
+        price = int(item['price'].replace('Rp', '').replace('.', ''))
+        total += price * item['quantity']
+    
+    return render_template('cart.html', cart=session['cart'], total=total)
+
+@app.route('/update_cart/<product_id>', methods=['POST'])
+def update_cart(product_id):
+    data = request.get_json()
+    quantity = data.get('quantity', 1)
+    
+    if 'cart' not in session or product_id not in session['cart']:
+        return jsonify({'error': 'Item not in cart'}), 400
+    
+    if quantity <= 0:
+        session['cart'].pop(product_id)
+    else:
+        session['cart'][product_id]['quantity'] = quantity
+    
+    session.modified = True
+    
+    total = 0
+    for item in session['cart'].values():
+        price = int(item['price'].replace('Rp', '').replace('.', ''))
+        total += price * item['quantity']
+    
+    return jsonify({
+        'success': True,
+        'cart_count': len(session['cart']),
+        'total': total
+    })
+
+@app.route('/remove_from_cart/<product_id>', methods=['POST'])
+def remove_from_cart(product_id):
+    if 'cart' in session and product_id in session['cart']:
+        session['cart'].pop(product_id)
+        session.modified = True
+    
+    total = 0
+    for item in session['cart'].values():
+        price = int(item['price'].replace('Rp', '').replace('.', ''))
+        total += price * item['quantity']
+    
+    return jsonify({
+        'success': True,
+        'cart_count': len(session['cart']),
+        'total': total
+    })
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -117,7 +224,7 @@ def chat():
     try:
         response = Generation.call(
             api_key=DASHSCOPE_API_KEY,
-            model="qwen-plus",
+            model="qwen-max",
             messages=chat_history,
             result_format='message'
         )
@@ -131,19 +238,15 @@ def chat():
             'bot_reply': formatted_reply,
             'original_reply': bot_reply
         })
-        
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# Di bagian route product detail
 @app.route('/product/<product_id>')
 def product_detail(product_id):
-    # Bersihkan product_id dari karakter yang tidak perlu
-    product_id = product_id.replace('product.', '')  # Hilangkan 'product.' jika ada
-    product = PRODUCTS.get(product_id.lower())  # Gunakan lowercase untuk konsistensi
+    product_id = product_id.replace('product.', '')
+    product = PRODUCTS.get(product_id.lower())
     
     if not product:
-        # Jika produk tidak ditemukan, tampilkan halaman 404 yang lebih baik
         return render_template('404.html'), 404
     return render_template('product.html', product=product)
 
@@ -160,6 +263,38 @@ def format_response(text):
         r'<a href="/product/\2" class="product-link">\1</a>', 
         text
     )
+
+    # Format produk rekomendasi dengan gambar
+    if "Produk Rekomendasi" in text:
+        parts = text.split("Produk Rekomendasi")
+        text = parts[0]
+        
+        products_html = '<div class="products-recommendation"><h4>Produk Rekomendasi</h4><div class="products-grid">'
+        
+        # Cari produk yang disebutkan
+        mentioned_products = []
+        if "Terasi" in parts[1]:
+            mentioned_products.append("terasi")
+        if "Gula Merah" in parts[1]:
+            mentioned_products.append("gula-merah")
+        if "Cabai Rawit" in parts[1]:
+            mentioned_products.append("cabai-rawit")
+        
+        for product_id in mentioned_products:
+            product = PRODUCTS.get(product_id)
+            if product:
+                products_html += f'''
+                <a href="/product/{product_id}" class="product-card">
+                    <img src="{product['image']}" alt="{product['name']}">
+                    <div class="product-name">{product['name']}</div>
+                    <div class="product-price">{product['price']}</div>
+                </a>
+                '''
+        
+        products_html += '</div></div>'
+        text += products_html
+    
+    return f'<div class="message-content">{text}</div>'
     
     # Format lists
     text = text.replace('- ', '<li>')
